@@ -462,8 +462,13 @@ static int dsi_panel_set_pinctrl_state(struct dsi_panel *panel, bool enable)
 }
 
 
-/* Keep cold-boot panel regulator/bias/reset sequencing intact. */
-static bool tb371fc_keep_panel_power = true;
+/*
+ * TB371FC wake must repeat the cold-boot regulator/bias/reset sequence.
+ * Retaining rails and skipping reset leaves the panel without a clean
+ * DSI re-init, which matches the observed post-unblank glitch. Keep the
+ * narrow touch interlock as-is; fix the panel side with a real reset.
+ */
+static bool tb371fc_keep_panel_power = false;
 
 static int dsi_panel_power_on(struct dsi_panel *panel)
 {
