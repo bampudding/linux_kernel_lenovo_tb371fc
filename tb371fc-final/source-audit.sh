@@ -29,6 +29,25 @@ if [[ -s tb371fc-final/prebuilt/tb371fc-known-good-dtb.bin ]]; then
     status=1
   fi
 fi
+# Module signature enforcement requires the actual 2026-10-10 vendor signer
+# to be present in the built-in trust bundle (all certs have identical subjects).
+if ! python3 - "$root/certs/tb371fc-oem-and-wifi-trust.pem" "$root/certs/tb371fc-live-1010-module-signer.pem" <<'CERT_AUDIT'
+import base64,hashlib,pathlib,re,sys
+pat = re.compile(rb"-----BEGIN CERTIFICATE-----\s*(.*?)\s*-----END CERTIFICATE-----",re.S)
+def hashes(path):
+    out=[]
+    for payload in pat.findall(pathlib.Path(path).read_bytes()):
+        data=base64.b64decode(re.sub(rb"\s+", b"", payload), validate=True)
+        out.append(hashlib.sha256(data).hexdigest())
+    return out
+expected="fc596fd06129729a28f76403996d8c3ead421660a411169cfd5cfb5ca0e4db45"
+known=hashes(sys.argv[2]); bundle=hashes(sys.argv[1]);
+if known!=[expected] or expected not in bundle:
+    print("ERROR: verified 1010 vendor module signer certificate missing/changed",file=sys.stderr)
+    sys.exit(1)
+print(f"PASS: verified 1010 module signer certificate is trusted ({len(bundle)} certificates).")
+CERT_AUDIT
+then status=1; fi
 if [[ -L arch/arm64/boot/dts/vendor && ! -e arch/arm64/boot/dts/vendor ]]; then
   printf 'WARN: vendor DTS symlink is dangling: cannot recreate DTBs from DTS sources.\n'
   printf '      Packaging MUST use the pinned known-good DTB, not a guessed DTB.\n'
