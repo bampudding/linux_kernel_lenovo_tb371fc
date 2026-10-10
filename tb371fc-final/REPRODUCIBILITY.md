@@ -61,3 +61,13 @@ The experimental Adreno v676.68 OpenGL overlay has been **disabled** after repea
 The exact fourth **public** X.509 certificate was recovered from the already published unrooted `boot-b-final-vanilla.img` Image and cross-checked against the owner-private APatch kernel (the unpatched kernels have identical SHA256). Its SHA-256 fingerprint is `FC:59:6F:D0:61:29:72:9A:28:F7:64:03:99:6D:8C:3E:AD:42:16:60:A4:11:16:9C:FD:5C:FB:5C:A0:E4:DB:45`. Using its public certificate to verify the *actual vendor module* PKCS#7 signature with OpenSSL CMS **succeeded** (`CMS Verification successful`). The certificate was added to the tracked `certs/tb371fc-oem-and-wifi-trust.pem` trust bundle, *without disabling* `CONFIG_MODULE_SIG_FORCE` or exposing any private signing key. `source-audit.sh` checks the DER fingerprint in both the standalone certificate and bundled trust file.
 
 This preserves forced module signature verification while accepting the existing vendor module signer. Matching CRCs remain a separate mandatory condition; the seven incompatible modules listed above are still excluded from any safe update until rebuilt or otherwise resolved. A device boot test of a completely new kernel has **not** been performed merely from this certificate correction.
+
+## Safe offline module remediation, NOT deployed
+
+After a clean-clone `make modules_install` into an **isolated `INSTALL_MOD_PATH`**, the four in-tree replacements `tcp_bic.ko`, `tcp_westwood.ko`, `tcp_htcp.ko`, and `wigig_sensing.ko` were correctly signed by the fresh kernel's **own** generated signing certificate. The private signing key remains on the build server and is not copied into Git or the report. A staged 41-module set was constructed from these 4 and the 37 original vendor modules with already matching CRCs. **All 41 PKCS#7/CMS signatures cryptographically verified** against the two public certificates actually embedded in the candidate kernel; **3,026/3,026** imported versioned symbol CRCs also match. The other 3 mismatching and currently unnecessary modules were excluded (`qca_cld3_qca6490.ko`, `rmnet_shs.ko`, `rmnet_perf.ko`).
+
+Offline staging path, **not on device**:
+
+`/root/kernel-lab/tb371fc/vendor-abi-compatible-staging-20261010/`
+
+Contains `MANIFEST.txt` with SHA-256s and explicit nondeployment warning. This does **not** resolve missing external source for the excluded modules, and a boot test with this matching kernel/vendor set is still outstanding.

@@ -31,3 +31,9 @@
 **Do not install this release on other hardware.** Save the current boot image and active vendor/vbmeta first; never overwrite golden slot A merely for a GPU update.
 
 The only supported rollback for the OGL overlay is to disable `tb371fc-adreno-ogl-67668` and reboot. Original Qualcomm OGL will reappear, with Turnip 64-bit Vulkan unchanged.
+
+## 2026-10-10 post-release source and hardware safety correction
+
+The previous GitHub source release omitted all `techpack/` drivers due to a `.gitignore` error. The corrective source branch `fix/tb371fc-complete-build-inputs-20261010` adds that code, a pinned public known-good DTB, the original running kernel module signer **public X.509 certificate**, a clean-clone build check, and a strict vendor module ABI audit. See `tb371fc-final/REPRODUCIBILITY.md`. The new clean clone built both `Image.gz` and a complete `Module.symvers`, with symbol CRCs identical to the 2026-10-10 release. Full vendor DTS source remains missing. No rebuilt kernel has been boot-tested.
+
+**The experimental Adreno v676.68 OpenGL module must remain disabled** on the currently booted device: it was found to crash Qualcomm camera OpenCL (`libCB.so`) and OMX (`libgsl.so`). Both cameras recovered when the module was disabled, while SELinux remained Enforcing. Do not rely on the earlier graphics-only tests to claim camera or media compatibility.

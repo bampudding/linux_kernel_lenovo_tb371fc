@@ -11,6 +11,8 @@ for file in \
   techpack/display/Makefile \
   techpack/display/msm/dsi/dsi_display.c \
   techpack/video/Makefile \
+  certs/tb371fc-oem-and-wifi-trust.pem \
+  certs/tb371fc-live-1010-module-signer.pem \
   tb371fc-final/kernel.config \
   tb371fc-final/prebuilt/tb371fc-known-good-dtb.bin; do
   if [[ ! -s "$file" ]]; then
