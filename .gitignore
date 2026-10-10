@@ -139,5 +139,5 @@ kernel/configs/android-*.cfg
 # vendor device tree directories
 arch/arm64/boot/dts/vendor/
 
-# Tech package directories
-techpack/
+# Qualcomm techpack is mandatory kernel source, not a generated artifact.
+# Keep it tracked for clean clone reproducibility.
